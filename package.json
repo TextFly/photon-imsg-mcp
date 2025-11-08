@@ -1,0 +1,52 @@
+{
+  "name": "@textfly/photon-imsg-mcp",
+  "version": "0.1.0",
+  "description": "A Model Context Protocol server for iMessage operations using the Photon iMessage SDK",
+  "private": false,
+  "type": "module",
+  "bin": {
+    "photon-imsg-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc && node -e \"require('fs').chmodSync('dist/index.js', '755')\"",
+    "start": "node dist/index.js --port 3002",
+    "dev:stdio": "tsx src/index.ts",
+    "dev:http": "tsx src/index.ts --port 3002",
+    "prepare": "npm run build",
+    "watch": "tsc --watch",
+    "inspector": "npx @modelcontextprotocol/inspector dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TextFly/photon-imsg-mcp.git"
+  },
+  "keywords": [
+    "mcp",
+    "imessage",
+    "photon",
+    "messaging",
+    "automation"
+  ],
+  "author": {
+    "name": "TextFly",
+    "url": "https://textfly.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/TextFly/photon-imsg-mcp/issues"
+  },
+  "homepage": "https://github.com/TextFly/photon-imsg-mcp#readme",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.16.0",
+    "@photon-ai/imessage-kit": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "^24.2.0",
+    "tsx": "^4.20.3",
+    "typescript": "^5.9.2"
+  }
+}
+
