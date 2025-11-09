@@ -1,5 +1,5 @@
 import { Message, Conversation, SendMessageArgs, ReadMessagesArgs, GetConversationsArgs } from './types.js';
-import { IMessageSDK } from '@photon-ai/imessage-kit';
+import { IMessageSDK, asRecipient, type Recipient } from '@photon-ai/imessage-kit';
 
 /**
  * Client for interacting with the Photon iMessage SDK
@@ -14,11 +14,23 @@ export class PhotonClient {
      */
     constructor() {
         try {
+            // Suppress SDK console output in STDIO mode to avoid interfering with MCP protocol
+            const originalConsoleLog = console.log;
+            const originalConsoleInfo = console.info;
+            
+            // Temporarily suppress console output during SDK initialization
+            console.log = () => {};
+            console.info = () => {};
+            
             // Initialize Photon SDK with optional configuration
             this.sdk = new IMessageSDK({
-                debug: process.env.NODE_ENV === 'development',
+                debug: false, // Disable SDK debug output in STDIO mode
                 maxConcurrent: 5
             });
+            
+            // Restore console output
+            console.log = originalConsoleLog;
+            console.info = originalConsoleInfo;
         } catch (error) {
             throw new Error(`Failed to initialize Photon SDK: ${error instanceof Error ? error.message : String(error)}`);
         }
@@ -45,8 +57,16 @@ export class PhotonClient {
                 throw new Error('Recipient and text are required');
             }
 
+            // Validate recipient format (phone number or email)
+            let validatedRecipient: Recipient;
+            try {
+                validatedRecipient = asRecipient(recipient);
+            } catch (error) {
+                throw new Error(`Invalid recipient format: ${recipient}. Expected phone number (e.g., +1234567890) or email address.`);
+            }
+
             // Use Photon SDK unified send API
-            await this.sdk.send(recipient, text);
+            await this.sdk.send(validatedRecipient, text);
 
             return `Message sent successfully to ${recipient}`;
         } catch (error) {
@@ -69,7 +89,13 @@ export class PhotonClient {
             };
 
             if (recipient) {
-                filter.sender = recipient;
+                // Validate recipient format if provided
+                try {
+                    const validatedRecipient = asRecipient(recipient);
+                    filter.sender = validatedRecipient;
+                } catch (error) {
+                    throw new Error(`Invalid recipient format: ${recipient}. Expected phone number (e.g., +1234567890) or email address.`);
+                }
             }
 
             if (unreadOnly) {
